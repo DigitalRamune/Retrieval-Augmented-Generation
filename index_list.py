@@ -1,18 +1,25 @@
-import pathlib as p
+import pathlib
+from typing import Any
 
 
-def get_files_for_index() -> list[str]:
-    d = p.Path.cwd()
-    python_files = d.rglob('*.py')
-    md_files = d.rglob('*.md')
+def get_files_for_index(path: str) -> list[str]:
+    dir_path = pathlib.Path(path)
+    python_files = pathlib.Path.rglob(dir_path, '*.py')
+    md_files = pathlib.Path.rglob(dir_path, '*.md')
     final_list = []
     for file in python_files:
-        final_list.append(file)
+        final_list.append(str(file))
     for file in md_files:
-        final_list.append(file)
+        final_list.append(str(file))
     return final_list
 
+
+def chunk_files(files_list: list[str], max_chunk_size: int) -> None:
+    for file in files_list:
+        if file.endswith('.md'):
+
+        elif file.endswith('.py'):
+
+
 if __name__ == "__main__":
-    list = get_files_for_index("./vllm-0.10.1/")
-    for item in list:
-        print(f'{item}\n')
+    files = get_files_for_index("./vllm-0.10.1/")
