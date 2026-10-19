@@ -23,14 +23,14 @@ def get_files_for_index(path: str) -> list[str]:
     return final_list
 
 
-def chunk_files(files_list: list[str], max_chunk_size: int) -> None:
+def chunk_files(files_list: list[str], max_chunk_size: int) -> list[Chunk]:
+    list_of_chunks: list[Chunk] = []
     for file in files_list:
         if file.endswith('.md'):
             try:
                 with open(file, encoding="utf-8") as op_file:
                     # Save the content of the file in a variable
                     entire_content = op_file.read()
-                    list_of_chunks: list[Chunk] = []
                     if entire_content:
                         current_index = 0
                         while current_index < len(entire_content):
