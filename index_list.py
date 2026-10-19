@@ -17,8 +17,26 @@ def get_files_for_index(path: str) -> list[str]:
 def chunk_files(files_list: list[str], max_chunk_size: int) -> None:
     for file in files_list:
         if file.endswith('.md'):
+            try:
+                with open(file, encoding="utf-8") as op_file:
+                    entire_content = op_file.read()
+                    if entire_content:
+                        current_index = 0
+                        while current_index < len(entire_content):
+                            for char in entire_content:
+                            
+
+
+            except (FileNotFoundError, IsADirectoryError):
+                print(f"Error: with {file}\n")
 
         elif file.endswith('.py'):
+            try:
+                with open(file, encoding="utf-8") as op_file:
+                     entire_content = op_file.read()
+
+            except (FileNotFoundError, IsADirectoryError):
+                print(f"Error: with {file}\n")
 
 
 if __name__ == "__main__":
