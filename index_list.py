@@ -36,6 +36,7 @@ def chunk_files(files_list: list[str], max_chunk_size: int) -> list[Chunk]:
                         while current_index < len(entire_content):
                             temporary_chunk = entire_content[
                                 current_index: current_index + max_chunk_size]
+
                             if (temporary_chunk[len(temporary_chunk) - 1
                                                 ] != '\n' and temporary_chunk[
                                                     len(temporary_chunk) - 1
@@ -60,6 +61,7 @@ def chunk_files(files_list: list[str], max_chunk_size: int) -> list[Chunk]:
                                                   file)
                                 list_of_chunks.append(chunk_obj)
                                 current_index += chunck_end_index
+
                             else:
                                 chunk_obj = Chunk(current_index,
                                                   (current_index
@@ -77,9 +79,43 @@ def chunk_files(files_list: list[str], max_chunk_size: int) -> list[Chunk]:
             try:
                 with open(file, encoding="utf-8") as op_file:
                     entire_content = op_file.read()
+                    if entire_content:
+                        current_index = 0
+                        while current_index < len(entire_content):
+                            temporary_chunk = entire_content[
+                                current_index: current_index + max_chunk_size]
+
+                            if (temporary_chunk[len(temporary_chunk) - 1
+                                                ] != '\n' and temporary_chunk[
+                                                    len(temporary_chunk) - 2
+                                                    ] != '\n'):
+                                chunck_end_index = temporary_chunk.rfind(
+                                    '\n\n')
+                                if chunck_end_index == -1:
+                                    chunck_end_index = temporary_chunk.rfind(
+                                        '\n')
+                                    if chunck_end_index == -1:
+                                        chunck_end_index = len(
+                                            temporary_chunk) - 1
+                                final_chunk = temporary_chunk[
+                                    :chunck_end_index]
+                                chunk_obj = Chunk(current_index, (
+                                    current_index + chunck_end_index
+                                    ), final_chunk, file)
+                                list_of_chunks.append(chunk_obj)
+                                current_index += chunck_end_index
+
+                            else:
+                                chunk_obj = Chunk(current_index, (
+                                    current_index + max_chunk_size
+                                    ), temporary_chunk, file)
+                                list_of_chunks.append(chunk_obj)
+                                current_index += max_chunk_size
 
             except (FileNotFoundError, IsADirectoryError):
                 print(f"Error: with {file}\n")
+
+    return list_of_chunks
 
 
 if __name__ == "__main__":
