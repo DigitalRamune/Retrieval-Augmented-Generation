@@ -8,6 +8,7 @@ class Chunk:
         self.end_index = end_index
         self.text = text
         self.path = path
+        self.tokens: list[str] = []
 
 
 def get_files_for_index(path: str) -> list[str]:
