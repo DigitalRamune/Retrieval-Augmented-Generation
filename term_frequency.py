@@ -1,5 +1,8 @@
 from index_list import Chunk
 import numpy
+import os
+import json
+import pickle
 
 
 def get_tf_matrix(chunk_list: list[Chunk], global_vocab: dict[str, int]
@@ -23,3 +26,29 @@ def get_tfidf(tf_matrix: numpy.ndarray, idf_matrix: numpy.ndarray
               ) -> numpy.ndarray:
     tfidf_matrix = tf_matrix * idf_matrix
     return tfidf_matrix
+
+
+def save_matrix(tfidf_matrix: numpy.ndarray, global_vocab: dict[str, int],
+                chunk_list: list[Chunk]) -> None:
+    dir_path = './data/processed/'
+    try:
+        os.makedirs(dir_path, exist_ok=True)
+    except (PermissionError, OSError):
+        print(f"\nMissing permission to create directory: {dir_path}\n")
+        return
+    numpy.save('./data/processed/tf_idf.npy', tfidf_matrix)
+    try:
+        with open('./data/processed/vocab.json', "w", encoding='utf-8'
+                  ) as file:
+            json.dump(global_vocab, file, indent=4)
+    except (PermissionError, OSError, IsADirectoryError, FileNotFoundError):
+        print("\nError while creating vocab.json file \n")
+        return
+    try:
+        with open('./data/processed/chunk.pkl', "wb"
+                  ) as file:
+            pickle.dump(chunk_list, file, indent=4)
+    except (PermissionError, OSError, IsADirectoryError, FileNotFoundError):
+        print("\nError while creating chunk.pkl file \n")
+        return
+    return
