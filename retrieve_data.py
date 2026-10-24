@@ -34,3 +34,12 @@ def vectorize_query(query: str, global_vocab: dict[str, int]) -> numpy.ndarray:
             index = global_vocab[word]
             vector[index] += 1
     return vector
+
+
+def compare_scores(vector: numpy.ndarray, matrix: numpy.ndarray,
+                   chunk_list: list[Chunk]) -> Chunk | None:
+    scores = matrix.dot(vector)
+    if numpy.max(scores) == 0:
+        return None
+    highest = numpy.argmax(scores)
+    return chunk_list[highest]
