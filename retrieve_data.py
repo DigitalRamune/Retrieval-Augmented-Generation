@@ -3,6 +3,7 @@ import pickle
 import json
 import re
 from index_list import Chunk
+from data_models import SearchResult
 
 
 def load_data() -> tuple[numpy.ndarray, dict[str, int], list[Chunk]] | None:
@@ -37,9 +38,13 @@ def vectorize_query(query: str, global_vocab: dict[str, int]) -> numpy.ndarray:
 
 
 def compare_scores(vector: numpy.ndarray, matrix: numpy.ndarray,
-                   chunk_list: list[Chunk]) -> Chunk | None:
+                   chunk_list: list[Chunk]) -> SearchResult | None:
     scores = matrix.dot(vector)
     if numpy.max(scores) == 0:
         return None
     highest = numpy.argmax(scores)
-    return chunk_list[highest]
+    best_chunk = chunk_list[highest]
+    result = SearchResult(file_path=best_chunk.path,
+                          first_character_index=best_chunk.start_index,
+                          last_character_index=best_chunk.end_index)
+    return result
