@@ -1,10 +1,12 @@
 import fire
 import os
 import json
-import pydantic
 from tqdm import tqdm
 from pathlib import Path
 from retrieve_data import load_data, vectorize_query, compare_scores
+from index_list import get_files_for_index, chunk_files
+from term_frequency import get_tf_matrix, get_idf, get_tfidf, save_matrix
+from vocab import clean_text, create_vocab
 
 
 class SearchEngineCLI:
@@ -62,6 +64,25 @@ class SearchEngineCLI:
                 OSError, PermissionError):
             print(f"Error: cannot read {dataset_path} file.\n")
             return
+        return
+
+    def index(self, max_chunk_size: int = 200,
+              raw_dir: str = "data/raw/",
+              processed_dir: str = "data/processed/") -> None:
+        if max_chunk_size <= 0:
+            print(f"Error: {max_chunk_size} is not a valid size.\n")
+            return
+        if not os.path.exists(raw_dir):
+            print(f"Error: {raw_dir} is not a valid path.\n")
+            return
+        files_list = get_files_for_index(raw_dir)
+        chunk_list = chunk_files(files_list, max_chunk_size)
+        clean_text(chunk_list)
+        global_vocab = create_vocab(chunk_list)
+        tf_matrix = get_tf_matrix(chunk_list, global_vocab)
+        idf_matrix = get_idf(tf_matrix)
+        tfidf_matrix = get_tfidf(tf_matrix, idf_matrix)
+        save_matrix(tfidf_matrix, global_vocab, chunk_list, processed_dir)
 
 
 if __name__ == "__main__":

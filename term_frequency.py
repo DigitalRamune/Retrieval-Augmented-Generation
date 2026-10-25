@@ -29,25 +29,27 @@ def get_tfidf(tf_matrix: numpy.ndarray, idf_matrix: numpy.ndarray
 
 
 def save_matrix(tfidf_matrix: numpy.ndarray, global_vocab: dict[str, int],
-                chunk_list: list[Chunk]) -> None:
-    dir_path = './data/processed/'
+                chunk_list: list[Chunk], dir_path: str) -> None:
     try:
         os.makedirs(dir_path, exist_ok=True)
     except (PermissionError, OSError):
         print(f"\nMissing permission to create directory: {dir_path}\n")
         return
-    numpy.save('./data/processed/tf_idf.npy', tfidf_matrix)
+    m_path = os.path.join(dir_path, 'tf_idf.npy')
+    v_path = os.path.join(dir_path, 'vocab.json')
+    c_path = os.path.join(dir_path, 'chunk.pkl')
+    numpy.save(m_path, tfidf_matrix)
     try:
-        with open('./data/processed/vocab.json', "w", encoding='utf-8'
+        with open(v_path, "w", encoding='utf-8'
                   ) as file:
             json.dump(global_vocab, file, indent=4)
     except (PermissionError, OSError, IsADirectoryError, FileNotFoundError):
         print("\nError while creating vocab.json file \n")
         return
     try:
-        with open('./data/processed/chunk.pkl', "wb"
+        with open(c_path, "wb"
                   ) as file:
-            pickle.dump(chunk_list, file, indent=4)
+            pickle.dump(chunk_list, file)
     except (PermissionError, OSError, IsADirectoryError, FileNotFoundError):
         print("\nError while creating chunk.pkl file \n")
         return
