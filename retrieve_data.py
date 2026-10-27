@@ -1,40 +1,52 @@
-import numpy
-import pickle
+"""Module for loading indexed data and retrieving search results."""
+
 import json
-import re
 import os
-from index_list import Chunk
+import pickle
+import re
+from typing import Any
+import numpy
+from numpy.typing import NDArray
+from scipy import sparse
 from data_models import SearchResult
+from index_list import Chunk
 
 
-def load_data(processed_dir: str) -> tuple[
-     numpy.ndarray, dict[str, int], list[Chunk]] | None:
+def load_data(
+    processed_dir: str,
+) -> tuple[sparse.csr_matrix, dict[str, int], list[Chunk]] | None:
+    """Load the TF-IDF sparse matrix, vocabulary, and chunks from disk."""
     try:
-        m_path = os.path.join(processed_dir, 'tf_idf.npy')
-        v_path = os.path.join(processed_dir, 'vocab.json')
-        c_path = os.path.join(processed_dir, 'chunk.pkl')
-        matrix = numpy.load(m_path)
-        with open(v_path, "r", encoding='utf-8'
-                  ) as file:
-            vocab = json.load(file)
+        m_path = os.path.join(processed_dir, "tf_idf.npz")
+        v_path = os.path.join(processed_dir, "vocab.json")
+        c_path = os.path.join(processed_dir, "chunk.pkl")
+        matrix: sparse.csr_matrix = sparse.load_npz(m_path)
+        with open(v_path, "r", encoding="utf-8") as file:
+            vocab: dict[str, int] = json.load(file)
         with open(c_path, "rb") as file:
-            chunks = pickle.load(file)
+            chunks: list[Chunk] = pickle.load(file)
         return matrix, vocab, chunks
     except (ValueError, FileNotFoundError, IsADirectoryError, OSError):
         print("Error while reading the data files")
-        return
+        return None
 
 
 def clean_query(query: str) -> list[str]:
+    """Normalize and tokenize the search query string."""
     lower_text = query.lower()
-    clean_text = re.sub(r'[^\w\s]', ' ', lower_text)
-    splited_query = clean_text.split()
+    cleaned_text = re.sub(r"[^\w\s]", " ", lower_text)
+    splited_query = cleaned_text.split()
     return splited_query
 
 
-def vectorize_query(query: str, global_vocab: dict[str, int]) -> numpy.ndarray:
+def vectorize_query(
+    query: str, global_vocab: dict[str, int]
+) -> NDArray[numpy.float64]:
+    """Convert a search query into a term frequency vector."""
     cleaned_query = clean_query(query)
-    vector = numpy.zeros(len(global_vocab))
+    vector: NDArray[numpy.float64] = numpy.zeros(
+        len(global_vocab), dtype=numpy.float64
+    )
     for word in cleaned_query:
         if word in global_vocab:
             index = global_vocab[word]
@@ -42,17 +54,26 @@ def vectorize_query(query: str, global_vocab: dict[str, int]) -> numpy.ndarray:
     return vector
 
 
-def compare_scores(vector: numpy.ndarray, matrix: numpy.ndarray,
-                   chunk_list: list[Chunk],
-                   k: int) -> list[SearchResult] | None:
-    scores = matrix.dot(vector)
-    if numpy.max(scores) == 0:
+def compare_scores(
+    vector: NDArray[Any],
+    matrix: sparse.csr_matrix,
+    chunk_list: list[Chunk],
+    k: int,
+) -> list[SearchResult] | None:
+    """Compute similarity scores and return the top-k search results."""
+    scores: NDArray[Any] = numpy.asarray(matrix.dot(vector)).ravel()
+    if scores.size == 0 or numpy.max(scores) == 0:
         return None
+
     list_of_result: list[SearchResult] = []
     list_of_index = numpy.argsort(scores)[-k:][::-1]
     for index in list_of_index:
-        best_chunk = chunk_list[index]
-        list_of_result.append(SearchResult(file_path=best_chunk.path,
-                              first_character_index=best_chunk.start_index,
-                              last_character_index=best_chunk.end_index))
+        best_chunk = chunk_list[int(index)]
+        list_of_result.append(
+            SearchResult(
+                file_path=best_chunk.path,
+                first_character_index=best_chunk.start_index,
+                last_character_index=best_chunk.end_index,
+            )
+        )
     return list_of_result

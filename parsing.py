@@ -75,10 +75,17 @@ class SearchEngineCLI:
         if not os.path.exists(raw_dir):
             print(f"Error: {raw_dir} is not a valid path.\n")
             return
+        print("1. Recherche des fichiers...")
         files_list = get_files_for_index(raw_dir)
+        print(f"2. Découpage de {len(files_list)} fichiers...")
         chunk_list = chunk_files(files_list, max_chunk_size)
+        print(f"3. Nettoyage de {len(chunk_list)} chunks...")
         clean_text(chunk_list)
+        print("4. Création du vocabulaire...")
         global_vocab = create_vocab(chunk_list)
+        print(
+            f"5. Matrice TF ({len(chunk_list)}x{len(global_vocab)})..."
+        )
         tf_matrix = get_tf_matrix(chunk_list, global_vocab)
         idf_matrix = get_idf(tf_matrix)
         tfidf_matrix = get_tfidf(tf_matrix, idf_matrix)
