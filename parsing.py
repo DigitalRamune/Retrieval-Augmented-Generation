@@ -21,7 +21,10 @@ class SearchEngineCLI:
         matrix, vocab, chunks = data
         vector = vectorize_query(query, vocab)
         result = compare_scores(vector, matrix, chunks, k)
-        print(f"{result}\n")
+        for response in result:
+            print(f"{response.file_path} "
+                  f"[{response.first_character_index}:"
+                  f"{response.last_character_index}]")
 
     def search_dataset(self, dataset_path: str,
                        k: int, save_directory: str,
@@ -66,7 +69,7 @@ class SearchEngineCLI:
             return
         return
 
-    def index(self, max_chunk_size: int = 200,
+    def index(self, max_chunk_size: int = 2000,
               raw_dir: str = "data/raw/",
               processed_dir: str = "data/processed/") -> None:
         if max_chunk_size <= 0:
