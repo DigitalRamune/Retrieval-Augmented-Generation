@@ -7,7 +7,7 @@ import pickle
 import numpy
 from numpy.typing import NDArray
 from scipy import sparse
-from index_list import Chunk
+from .index_list import Chunk
 
 
 def get_tf_matrix(

@@ -8,8 +8,8 @@ from typing import Any
 import numpy
 from numpy.typing import NDArray
 from scipy import sparse
-from data_models import SearchResult
-from index_list import Chunk
+from .data_models import SearchResult
+from .index_list import Chunk
 
 
 def load_data(

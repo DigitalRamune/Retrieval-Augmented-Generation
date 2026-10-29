@@ -1,4 +1,4 @@
-from index_list import Chunk
+from .index_list import Chunk
 import re
 
 

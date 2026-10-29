@@ -3,10 +3,10 @@ import os
 import json
 from tqdm import tqdm
 from pathlib import Path
-from retrieve_data import load_data, vectorize_query, compare_scores
-from index_list import get_files_for_index, chunk_files
-from term_frequency import get_tf_matrix, get_idf, get_tfidf, save_matrix
-from vocab import clean_text, create_vocab
+from .retrieve_data import load_data, vectorize_query, compare_scores
+from .index_list import get_files_for_index, chunk_files
+from .term_frequency import get_tf_matrix, get_idf, get_tfidf, save_matrix
+from .vocab import clean_text, create_vocab
 
 
 class SearchEngineCLI:
