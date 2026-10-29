@@ -8,7 +8,7 @@ from typing import Any
 import numpy
 from numpy.typing import NDArray
 from scipy import sparse
-from .data_models import SearchResult
+from .data_models import MinimalSource
 from .index_list import Chunk
 
 
@@ -59,18 +59,18 @@ def compare_scores(
     matrix: sparse.csr_matrix,
     chunk_list: list[Chunk],
     k: int,
-) -> list[SearchResult] | None:
+) -> list[MinimalSource] | None:
     """Compute similarity scores and return the top-k search results."""
     scores: NDArray[Any] = numpy.asarray(matrix.dot(vector)).ravel()
     if scores.size == 0 or numpy.max(scores) == 0:
         return None
 
-    list_of_result: list[SearchResult] = []
+    list_of_result: list[MinimalSource] = []
     list_of_index = numpy.argsort(scores)[-k:][::-1]
     for index in list_of_index:
         best_chunk = chunk_list[int(index)]
         list_of_result.append(
-            SearchResult(
+            MinimalSource(
                 file_path=best_chunk.path,
                 first_character_index=best_chunk.start_index,
                 last_character_index=best_chunk.end_index,

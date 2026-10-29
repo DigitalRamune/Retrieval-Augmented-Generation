@@ -1,7 +1,27 @@
 from pydantic import BaseModel
 
 
-class SearchResult(BaseModel):
+class MinimalSource(BaseModel):
     file_path: str
     first_character_index: int
     last_character_index: int
+
+
+class MinimalSearchResult(BaseModel):
+    question_id: str
+    question: str
+    retrieved_sources: list[MinimalSource]
+
+
+class MinimalAnswer(MinimalSearchResult):
+    answer: str
+
+
+class StudentSearchResults(BaseModel):
+    search_results: list[MinimalSearchResult]
+    k: int
+
+
+class StudentSearchResultsAndAnswer(BaseModel):
+    search_results: list[MinimalAnswer]
+    k: int
