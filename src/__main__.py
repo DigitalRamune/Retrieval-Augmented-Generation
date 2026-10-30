@@ -3,10 +3,13 @@ import os
 import json
 from tqdm import tqdm
 from pathlib import Path
-from .retrieve_data import load_data, vectorize_query, compare_scores
+from .retrieve_data import (load_data, vectorize_query, compare_scores,
+                            build_context)
 from .index_list import get_files_for_index, chunk_files
 from .term_frequency import get_tf_matrix, get_idf, get_tfidf, save_matrix
 from .vocab import clean_text, create_vocab
+from .generator import generate_answer
+from .data_models import MinimalAnswer, StudentSearchResultsAndAnswer
 
 
 class SearchEngineCLI:
@@ -93,6 +96,31 @@ class SearchEngineCLI:
         idf_matrix = get_idf(tf_matrix)
         tfidf_matrix = get_tfidf(tf_matrix, idf_matrix)
         save_matrix(tfidf_matrix, global_vocab, chunk_list, processed_dir)
+
+    def answer(self, query: str, k: int) -> None:
+        if k <= 0:
+            print(f"Error: {k} is not a valid argument.\n")
+            return
+        data = load_data('data/processed/')
+        if not data:
+            return
+        matrix, vocab, chunks = data
+        vector = vectorize_query(query, vocab)
+        result = compare_scores(vector, matrix, chunks, k)
+        if not result:
+            print("Error: list of results is empty.\n")
+            return
+        result_str = build_context(result)
+        if not result_str:
+            print("Error: cannot generate result string.\n")
+            return
+        final_answer = generate_answer(result_str, query)
+        single_anwser = MinimalAnswer(question_id='1', question=query,
+                                      retrieved_sources=result,
+                                      answer=final_answer)
+        output = StudentSearchResultsAndAnswer(search_results=[single_anwser],
+                                               k=k)
+        print(output.model_dump_json(indent=4))
 
 
 if __name__ == "__main__":
