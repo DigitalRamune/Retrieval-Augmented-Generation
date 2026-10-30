@@ -85,7 +85,8 @@ def build_context(search_result: list[MinimalSource]) -> str:
         try:
             with open(item.file_path, 'r', encoding='utf-8') as file:
                 text = file.read()
-                text_list.append(text[item.first_character_index:item.last_character_index])
+                text_list.append(
+                    text[item.first_character_index:item.last_character_index])
         except (PermissionError,
                 FileNotFoundError,
                 OSError,
