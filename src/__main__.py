@@ -9,7 +9,9 @@ from .index_list import get_files_for_index, chunk_files
 from .term_frequency import get_tf_matrix, get_idf, get_tfidf, save_matrix
 from .vocab import clean_text, create_vocab
 from .generator import generate_answer
-from .data_models import MinimalAnswer, StudentSearchResultsAndAnswer
+from .data_models import (MinimalAnswer, StudentSearchResultsAndAnswer,
+                          StudentSearchResults, MinimalSearchResult,
+                          MinimalSource)
 
 
 class SearchEngineCLI:
@@ -40,31 +42,38 @@ class SearchEngineCLI:
             print(f"Error: {dataset_path} is not a valid path.\n")
             return
         if not os.path.isdir(save_directory):
-            print(f"Error: {save_directory} is not a directory.\n")
-            return
+            try:
+                os.makedirs(save_directory, exist_ok=True)
+            except (OSError, PermissionError):
+                print(f"Error: {save_directory} is not a directory.\n")
+                return
         data = load_data(processed_dir)
         if not data:
             return
         matrix, vocab, chunks = data
         try:
             all_result = []
+            writing_name = Path(dataset_path).name
             writing_path = os.path.join(save_directory,
-                                        'student_search_result.json')
+                                        writing_name)
             with open(dataset_path, 'r', encoding='utf-8') as file:
                 dataset = json.load(file)
                 for item in tqdm(dataset):
-                    query = item["query"]
+                    query = item['question']
                     vector = vectorize_query(query, vocab)
                     result = compare_scores(vector, matrix, chunks, k)
                     if result is None:
-                        result_dicts = []
-                    else:
-                        result_dicts = [r.model_dump() for r in result]
-                    all_result.append({"id": item.get("id"),
-                                       "query": query,
-                                       "results": result_dicts})
+                        result = []
+                    new_result = MinimalSearchResult(
+                        question_id=item['question_id'],
+                        question=query,
+                        retrieved_sources=result)
+                    all_result.append(new_result)
+                result_obj = StudentSearchResults(search_results=all_result,
+                                                  k=k)
             with open(writing_path, 'w', encoding='utf-8') as file:
-                json.dump(all_result, file, indent=4)
+                content = result_obj.model_dump_json(indent=4)
+                file.write(content)
 
         except (FileNotFoundError, json.JSONDecodeError,
                 OSError, PermissionError):
