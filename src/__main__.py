@@ -58,14 +58,16 @@ class SearchEngineCLI:
                                         writing_name)
             with open(dataset_path, 'r', encoding='utf-8') as file:
                 dataset = json.load(file)
-                for item in tqdm(dataset):
+                questions = dataset.get("rag_questions", dataset) if isinstance(dataset, dict) else dataset
+                for item in tqdm(questions):
                     query = item['question']
+                    q_id = item.get("question_id", item.get("id", ""))
                     vector = vectorize_query(query, vocab)
                     result = compare_scores(vector, matrix, chunks, k)
                     if result is None:
                         result = []
                     new_result = MinimalSearchResult(
-                        question_id=item['question_id'],
+                        question_id=q_id,
                         question=query,
                         retrieved_sources=result)
                     all_result.append(new_result)
@@ -106,11 +108,11 @@ class SearchEngineCLI:
         tfidf_matrix = get_tfidf(tf_matrix, idf_matrix)
         save_matrix(tfidf_matrix, global_vocab, chunk_list, processed_dir)
 
-    def answer(self, query: str, k: int) -> None:
+    def answer(self, query: str, k: int, processed_dir: str = "data/processed/") -> None:
         if k <= 0:
             print(f"Error: {k} is not a valid argument.\n")
             return
-        data = load_data('data/processed/')
+        data = load_data(processed_dir)
         if not data:
             return
         matrix, vocab, chunks = data

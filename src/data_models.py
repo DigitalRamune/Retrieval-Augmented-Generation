@@ -24,7 +24,7 @@ class MinimalAnswer(MinimalSearchResult):
 
 
 class AnsweredQuestion(UnansweredQuestion):
-    sources: list[MinimalAnswer]
+    sources: list[MinimalSource]
     answer: str
 
 
