@@ -8,7 +8,7 @@ from .retrieve_data import (load_data, vectorize_query, compare_scores,
 from .index_list import get_files_for_index, chunk_files
 from .term_frequency import get_tf_matrix, get_idf, get_tfidf, save_matrix
 from .vocab import clean_text, create_vocab
-from .generator import generate_answer
+from .generator import generate_answer, create_tokenizer_model
 from .data_models import (MinimalAnswer, StudentSearchResultsAndAnswer,
                           StudentSearchResults, MinimalSearchResults,
                           MinimalSource)
@@ -132,6 +132,65 @@ class SearchEngineCLI:
         output = StudentSearchResultsAndAnswer(search_results=[single_anwser],
                                                k=k)
         print(output.model_dump_json(indent=4))
+
+    def answer_dataset(self, student_search_results_path: str,
+                       save_directory: str) -> None:
+        if not student_search_results_path or not save_directory:
+            print("Error: invalid parameter.\n")
+            return
+        result = Path(student_search_results_path)
+        if not result.exists():
+            print(f"Error: {student_search_results_path} is not a valid path."
+                  "\n")
+            return
+        if not os.path.isdir(save_directory):
+            try:
+                os.makedirs(save_directory, exist_ok=True)
+            except (PermissionError, OSError):
+                print(f"Error: couldn't create {save_directory} directory.\n")
+                return
+        tokenizer, model = create_tokenizer_model()
+        try:
+            writing_name = Path(student_search_results_path).name
+            writing_path = os.path.join(save_directory,
+                                        writing_name)
+            with open(student_search_results_path, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+                k = data['k']
+                answer_list: list[MinimalAnswer] = []
+                search_list = data['search_results']
+                for item in tqdm(search_list):
+                    question_id = item.get('question_id', item.get('id', ''))
+                    question = item.get('question')
+                    sources = item.get("retrieved_sources")
+                    minimal_list: list[MinimalSource] = []
+                    for s in sources:
+                        obj = MinimalSource(file_path=s["file_path"],
+                                            first_character_index=int(
+                                                s["first_character_index"]),
+                                            last_character_index=int(
+                                                s["last_character_index"]))
+                        minimal_list.append(obj)
+                    context = build_context(minimal_list)
+                    answer = generate_answer(context=context,
+                                             question=question,
+                                             model=model,
+                                             tokenizer=tokenizer)
+                    new = MinimalAnswer(answer=answer,
+                                        question_id=question_id,
+                                        question=question,
+                                        retrieved_sources=minimal_list)
+                    answer_list.append(new)
+                final_obj = StudentSearchResultsAndAnswer(
+                    search_results=answer_list, k=k)
+            with open(writing_path, 'w', encoding='utf-8') as file:
+                content = final_obj.model_dump_json(indent=4)
+                file.write(content)
+
+        except (json.JSONDecodeError, PermissionError, TypeError):
+            print("Error: cannot extract data from "
+                  f"{student_search_results_path}.\n")
+            return
 
 
 if __name__ == "__main__":

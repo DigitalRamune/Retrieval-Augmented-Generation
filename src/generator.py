@@ -1,5 +1,6 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
+from typing import Any
 
 
 def generate_answer(context: str, question: str, model=None,
@@ -38,3 +39,12 @@ Answer:"""
         final_answer = final_answer.split("\n---")[0]
 
     return final_answer.strip()
+
+
+def create_tokenizer_model() -> tuple[Any, Any]:
+    model_id = "Qwen/Qwen3-0.6B"
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForCausalLM.from_pretrained(model_id,
+                                                 torch_dtype=torch.float16,
+                                                 device_map='auto')
+    return tokenizer, model
