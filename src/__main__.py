@@ -10,7 +10,7 @@ from .term_frequency import get_tf_matrix, get_idf, get_tfidf, save_matrix
 from .vocab import clean_text, create_vocab
 from .generator import generate_answer
 from .data_models import (MinimalAnswer, StudentSearchResultsAndAnswer,
-                          StudentSearchResults, MinimalSearchResult,
+                          StudentSearchResults, MinimalSearchResults,
                           MinimalSource)
 
 
@@ -66,7 +66,7 @@ class SearchEngineCLI:
                     result = compare_scores(vector, matrix, chunks, k)
                     if result is None:
                         result = []
-                    new_result = MinimalSearchResult(
+                    new_result = MinimalSearchResults(
                         question_id=q_id,
                         question=query,
                         retrieved_sources=result)

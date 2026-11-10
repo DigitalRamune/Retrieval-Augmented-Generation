@@ -2,12 +2,15 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 
 
-def generate_answer(context: str, question: str) -> str:
+def generate_answer(context: str, question: str, model=None,
+                    tokenizer=None) -> str:
     model_id = "Qwen/Qwen3-0.6B"
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    model = AutoModelForCausalLM.from_pretrained(model_id,
-                                                 torch_dtype=torch.float16,
-                                                 device_map='auto')
+    if tokenizer is None:
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+    if model is None:
+        model = AutoModelForCausalLM.from_pretrained(model_id,
+                                                     torch_dtype=torch.float16,
+                                                     device_map='auto')
     prompt = f"""You are a precise technical assistant. Answer the question using ONLY the provided Context. 
 If the Context does not contain the answer, reply exactly with: "I cannot answer based on the provided context." Do not guess, do not add external information, and do not make up code.
 

@@ -13,13 +13,13 @@ class UnansweredQuestion(BaseModel):
     question: str
 
 
-class MinimalSearchResult(BaseModel):
+class MinimalSearchResults(BaseModel):
     question_id: str
     question: str
     retrieved_sources: list[MinimalSource]
 
 
-class MinimalAnswer(MinimalSearchResult):
+class MinimalAnswer(MinimalSearchResults):
     answer: str
 
 
@@ -33,7 +33,7 @@ class RagDataset(BaseModel):
 
 
 class StudentSearchResults(BaseModel):
-    search_results: list[MinimalSearchResult]
+    search_results: list[MinimalSearchResults]
     k: int
 
 
