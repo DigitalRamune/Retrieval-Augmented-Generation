@@ -1,4 +1,5 @@
 import fire
+from typing import Any
 import os
 import json
 from tqdm import tqdm
@@ -58,7 +59,8 @@ class SearchEngineCLI:
                                         writing_name)
             with open(dataset_path, 'r', encoding='utf-8') as file:
                 dataset = json.load(file)
-                questions = dataset.get("rag_questions", dataset) if isinstance(dataset, dict) else dataset
+                questions = (dataset.get("rag_questions", dataset)
+                             if isinstance(dataset, dict) else dataset)
                 for item in tqdm(questions):
                     query = item['question']
                     q_id = item.get("question_id", item.get("id", ""))
@@ -190,6 +192,50 @@ class SearchEngineCLI:
         except (json.JSONDecodeError, PermissionError, TypeError):
             print("Error: cannot extract data from "
                   f"{student_search_results_path}.\n")
+            return
+
+    def evaluate(self, student_search_results_path: str,
+                 dataset_path: str) -> None:
+        if not student_search_results_path or not dataset_path:
+            print("Error: invalid parameters.\n")
+            return
+        data_path = Path(dataset_path)
+        stud_path = Path(student_search_results_path)
+        if not data_path.exists():
+            print(f"Error: {data_path} is not valid.\n")
+            return
+        if not stud_path.exists():
+            print(f"Error: {stud_path} is not valid.\n")
+            return
+        try:
+            with open(student_search_results_path, 'r', encoding='utf-8') as file:
+                stud_content = json.load(file)
+            with open(dataset_path, 'r', encoding='utf-8') as file:
+                data_content = json.load(file)
+            stud_prediction = stud_content.get('search_results')
+            stud_k = stud_content.get('k')
+            questions = (data_content.get("rag_questions", data_content)
+                         if isinstance(data_content, dict) else data_content)
+            ground_truth_dict: dict[Any, Any] = {}
+            stud_k = int(stud_k)
+            for item in tqdm(questions):
+                question_id = item.get('question_id', item.get('id', ''))
+                sources = item.get('sources', [])
+                ground_truth_dict[question_id] = sources
+            total_recall = 0.0
+            valid_questions = 0
+            for student_item in stud_prediction:
+                q_id = student_item.get(
+                    'question_id', student_item.get('id', ''))
+                r_sources = student_item.get('retrieved_sources', [])
+                r_sources = r_sources[:stud_k]
+                gt_sources = ground_truth_dict.get(q_id, [])
+                if not gt_sources:
+                    continue
+                hits = 0
+
+        except (json.JSONDecodeError, PermissionError, IsADirectoryError):
+            print("Error: cannot read files.\n")
             return
 
 
