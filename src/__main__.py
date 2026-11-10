@@ -233,6 +233,21 @@ class SearchEngineCLI:
                 if not gt_sources:
                     continue
                 hits = 0
+                for gt in gt_sources:
+                    for r in r_sources:
+                        if ((gt["file_path"] == r["file_path"]) and
+                            (max(gt['first_character_index'], r[
+                                'first_character_index']) <
+                             min(gt['last_character_index'], r[
+                                 "last_character_index"]))):
+                            hits += 1
+                            break
+                recall = hits / len(gt_sources)
+                total_recall += recall
+                valid_questions += 1
+            if valid_questions > 0:
+                average = total_recall / valid_questions
+                print(f"Recall@{stud_k}: {average}")
 
         except (json.JSONDecodeError, PermissionError, IsADirectoryError):
             print("Error: cannot read files.\n")
