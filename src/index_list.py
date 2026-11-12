@@ -104,4 +104,3 @@ def chunk_files(files_list: list[str], max_chunk_size: int) -> list[Chunk]:
 
 if __name__ == "__main__":
     files = get_files_for_index("./vllm-0.10.1/")
-    

@@ -55,7 +55,7 @@ def get_idf(tf_matrix: sparse.csr_matrix) -> NDArray[numpy.float32]:
     rows = tf_matrix.shape[0]
     cols = tf_matrix.shape[1]
     doc_freq = numpy.bincount(tf_matrix.indices, minlength=cols)
-    idf_raw = numpy.log(rows / (doc_freq + 1e-10))
+    idf_raw = numpy.log(((rows - doc_freq + 0.5)/(doc_freq + 0.5)) + 1)
     idf_matrix: NDArray[numpy.float32] = idf_raw.astype(numpy.float32)
     return idf_matrix
 
@@ -64,6 +64,15 @@ def get_tfidf(
     tf_matrix: sparse.csr_matrix, idf_matrix: NDArray[numpy.float32]
 ) -> sparse.csr_matrix:
     """Multiply the TF sparse matrix in-place by the IDF vector."""
+    doc_lenghts = tf_matrix.sum(axis=1).A1
+    avgdl = doc_lenghts.mean()
+    row_index = tf_matrix.nonzero()[0]
+    elements_lenghts = doc_lenghts[row_index]
+    k1 = 1.5
+    b = 0.75
+    tf_matrix.data = (tf_matrix.data * (k1 + 1)) / (
+        tf_matrix.data + k1 * (1 - b + b * (elements_lenghts / avgdl))
+    )
     tf_matrix.data *= idf_matrix[tf_matrix.indices]
     return tf_matrix
 
