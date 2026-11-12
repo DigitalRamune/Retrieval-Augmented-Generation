@@ -26,7 +26,7 @@ Answer:"""
     inputs = tokenizer(prompt, return_tensors='pt').to(model.device)
     outputs = model.generate(
         **inputs,
-        max_new_tokens=200,
+        max_new_tokens=100,
         do_sample=False,
         repetition_penalty=1.2
     )

@@ -166,7 +166,7 @@ class SearchEngineCLI:
                     question = item.get('question')
                     sources = item.get("retrieved_sources")
                     minimal_list: list[MinimalSource] = []
-                    for s in sources:
+                    for s in sources[:1]:
                         obj = MinimalSource(file_path=s["file_path"],
                                             first_character_index=int(
                                                 s["first_character_index"]),
@@ -174,6 +174,7 @@ class SearchEngineCLI:
                                                 s["last_character_index"]))
                         minimal_list.append(obj)
                     context = build_context(minimal_list)
+                    context = context[:1000]
                     answer = generate_answer(context=context,
                                              question=question,
                                              model=model,
