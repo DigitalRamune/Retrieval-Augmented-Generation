@@ -80,6 +80,14 @@ def compare_scores(
 
 
 def build_context(search_result: list[MinimalSource]) -> str:
+    """Read and concatenate text spans from retrieved source locations.
+
+    Args:
+        search_result: List of MinimalSource objects pointing to file slices.
+
+    Returns:
+        A single string joining the extracted snippets separated by dividers.
+    """
     text_list: list[str] = []
     for item in search_result:
         try:

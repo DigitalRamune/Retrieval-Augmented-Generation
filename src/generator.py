@@ -5,6 +5,17 @@ from typing import Any
 
 def generate_answer(context: str, question: str, model=None,
                     tokenizer=None) -> str:
+    """Generate a grounded answer from context using Qwen/Qwen3-0.6B.
+
+    Args:
+        context: Retrieved text snippets concatenated as reference context.
+        question: User query to answer.
+        model: Preloaded causal language model instance, if available.
+        tokenizer: Preloaded tokenizer instance, if available.
+
+    Returns:
+        The generated answer string grounded in the provided context.
+    """
     model_id = "Qwen/Qwen3-0.6B"
     if tokenizer is None:
         tokenizer = AutoTokenizer.from_pretrained(model_id)
@@ -12,8 +23,11 @@ def generate_answer(context: str, question: str, model=None,
         model = AutoModelForCausalLM.from_pretrained(model_id,
                                                      torch_dtype=torch.float16,
                                                      device_map='auto')
-    prompt = f"""You are a precise technical assistant. Answer the question using ONLY the provided Context. 
-If the Context does not contain the answer, reply exactly with: "I cannot answer based on the provided context." Do not guess, do not add external information, and do not make up code.
+    prompt = f"""You are a precise technical assistant. Answer the question 
+    using ONLY the provided Context. 
+If the Context does not contain the answer, reply exactly with: "I 
+cannot answer based on the provided context." Do not guess, do not add 
+external information, and do not make up code.
 
 Context:
 ---
@@ -42,6 +56,11 @@ Answer:"""
 
 
 def create_tokenizer_model() -> tuple[Any, Any]:
+    """Load and return the Qwen/Qwen3-0.6B tokenizer and model.
+
+    Returns:
+        A tuple containing the initialized tokenizer and causal LM model.
+    """
     model_id = "Qwen/Qwen3-0.6B"
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     model = AutoModelForCausalLM.from_pretrained(model_id,

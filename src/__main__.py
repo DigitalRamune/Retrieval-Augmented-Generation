@@ -16,8 +16,18 @@ from .data_models import (MinimalAnswer, StudentSearchResultsAndAnswer,
 
 
 class SearchEngineCLI:
+    """CLI controller exposing indexing, retrieval, generation,
+      and evaluation."""
+
     def search(self, query: str, k: int,
                processed_dir: str = "data/processed/") -> None:
+        """Retrieve and print the top-k source spans for a single query.
+
+        Args:
+            query: Search question string.
+            k: Number of top sources to return.
+            processed_dir: Directory containing the saved index files.
+        """
         if not query or k <= 0:
             print("Error with the parameters")
             return
@@ -35,6 +45,14 @@ class SearchEngineCLI:
     def search_dataset(self, dataset_path: str,
                        k: int, save_directory: str,
                        processed_dir: str = "data/processed/") -> None:
+        """Run batch retrieval on a JSON dataset and save results to disk.
+
+        Args:
+            dataset_path: Path to the input questions JSON file.
+            k: Number of top sources to retrieve per question.
+            save_directory: Directory where the output JSON will be saved.
+            processed_dir: Directory containing the saved index files.
+        """
         if not dataset_path or k <= 0 or not save_directory:
             print("Error: Invalid parameters.\n")
             return
@@ -88,6 +106,13 @@ class SearchEngineCLI:
     def index(self, max_chunk_size: int = 2000,
               raw_dir: str = "data/raw/",
               processed_dir: str = "data/processed/") -> None:
+        """Chunk corpus files, compute BM25 matrices, and persist the index.
+
+        Args:
+            max_chunk_size: Maximum character length per chunk.
+            raw_dir: Directory containing the raw corpus files.
+            processed_dir: Destination directory for the generated index.
+        """
         if max_chunk_size <= 0:
             print(f"Error: {max_chunk_size} is not a valid size.\n")
             return
@@ -110,7 +135,15 @@ class SearchEngineCLI:
         tfidf_matrix = get_tfidf(tf_matrix, idf_matrix)
         save_matrix(tfidf_matrix, global_vocab, chunk_list, processed_dir)
 
-    def answer(self, query: str, k: int, processed_dir: str = "data/processed/") -> None:
+    def answer(self, query: str, k: int,
+               processed_dir: str = "data/processed/") -> None:
+        """Retrieve context and print a JSON-formatted answer for one query.
+
+        Args:
+            query: Search question string.
+            k: Number of top sources to retrieve for context.
+            processed_dir: Directory containing the saved index files.
+        """
         if k <= 0:
             print(f"Error: {k} is not a valid argument.\n")
             return
@@ -137,6 +170,12 @@ class SearchEngineCLI:
 
     def answer_dataset(self, student_search_results_path: str,
                        save_directory: str) -> None:
+        """Generate grounded answers for a dataset of retrieved search results.
+
+        Args:
+            student_search_results_path: Path to the search results JSON file.
+            save_directory: Directory where the answered JSON will be saved.
+        """
         if not student_search_results_path or not save_directory:
             print("Error: invalid parameter.\n")
             return
@@ -197,6 +236,12 @@ class SearchEngineCLI:
 
     def evaluate(self, student_search_results_path: str,
                  dataset_path: str) -> None:
+        """Compute and print the local Recall@k score against ground truth.
+
+        Args:
+            student_search_results_path: Path to student search predictions JSON.
+            dataset_path: Path to the ground-truth dataset JSON.
+        """
         if not student_search_results_path or not dataset_path:
             print("Error: invalid parameters.\n")
             return
