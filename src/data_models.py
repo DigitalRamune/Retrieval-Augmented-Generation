@@ -24,13 +24,13 @@ class MinimalSearchResults(BaseModel):
 
 
 class MinimalAnswer(MinimalSearchResults):
-    """Represent search results along with a generated answer for a 
+    """Represent search results along with a generated answer for a
     question."""
     answer: str
 
 
 class AnsweredQuestion(UnansweredQuestion):
-    """Represent a ground-truth question with reference sources 
+    """Represent a ground-truth question with reference sources
     and answer."""
     sources: list[MinimalSource]
     answer: str

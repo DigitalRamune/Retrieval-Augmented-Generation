@@ -25,7 +25,7 @@ def create_vocab(chunk_list: list[Chunk]) -> dict[str, int]:
     """
     global_vocab: dict[str, int] = {}
     word_index = 0
-    for chunk in chunk_list: 
+    for chunk in chunk_list:
         for word in chunk.tokens:
             if word not in global_vocab:
                 global_vocab[word] = word_index

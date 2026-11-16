@@ -37,10 +37,11 @@ class SearchEngineCLI:
         matrix, vocab, chunks = data
         vector = vectorize_query(query, vocab)
         result = compare_scores(vector, matrix, chunks, k)
-        for response in result:
-            print(f"{response.file_path} "
-                  f"[{response.first_character_index}:"
-                  f"{response.last_character_index}]")
+        if result is not None:
+            for response in result:
+                print(f"{response.file_path} "
+                      f"[{response.first_character_index}:"
+                      f"{response.last_character_index}]")
 
     def search_dataset(self, dataset_path: str,
                        k: int, save_directory: str,
@@ -195,7 +196,8 @@ class SearchEngineCLI:
             writing_name = Path(student_search_results_path).name
             writing_path = os.path.join(save_directory,
                                         writing_name)
-            with open(student_search_results_path, 'r', encoding='utf-8') as file:
+            with open(student_search_results_path, 'r',
+                      encoding='utf-8') as file:
                 data = json.load(file)
                 k = data['k']
                 answer_list: list[MinimalAnswer] = []
@@ -239,7 +241,8 @@ class SearchEngineCLI:
         """Compute and print the local Recall@k score against ground truth.
 
         Args:
-            student_search_results_path: Path to student search predictions JSON.
+            student_search_results_path: Path to student search
+            predictions JSON.
             dataset_path: Path to the ground-truth dataset JSON.
         """
         if not student_search_results_path or not dataset_path:
@@ -254,7 +257,8 @@ class SearchEngineCLI:
             print(f"Error: {stud_path} is not valid.\n")
             return
         try:
-            with open(student_search_results_path, 'r', encoding='utf-8') as file:
+            with open(student_search_results_path, 'r',
+                      encoding='utf-8') as file:
                 stud_content = json.load(file)
             with open(dataset_path, 'r', encoding='utf-8') as file:
                 data_content = json.load(file)

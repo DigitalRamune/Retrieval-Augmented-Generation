@@ -3,8 +3,8 @@ import torch
 from typing import Any
 
 
-def generate_answer(context: str, question: str, model=None,
-                    tokenizer=None) -> str:
+def generate_answer(context: str, question: str, model: Any = None,
+                    tokenizer: Any = None) -> str | Any:
     """Generate a grounded answer from context using Qwen/Qwen3-0.6B.
 
     Args:
@@ -23,20 +23,16 @@ def generate_answer(context: str, question: str, model=None,
         model = AutoModelForCausalLM.from_pretrained(model_id,
                                                      torch_dtype=torch.float16,
                                                      device_map='auto')
-    prompt = f"""You are a precise technical assistant. Answer the question 
-    using ONLY the provided Context. 
-If the Context does not contain the answer, reply exactly with: "I 
-cannot answer based on the provided context." Do not guess, do not add 
-external information, and do not make up code.
-
-Context:
----
-{context}
----
-
-Question: {question}
-
-Answer:"""
+    prompt = (
+        "You are a precise technical assistant. Answer the question "
+        "using ONLY the provided Context.\n"
+        "If the Context does not contain the answer, reply exactly with: "
+        "\"I cannot answer based on the provided context.\" Do not guess, "
+        "do not add external information, and do not make up code.\n\n"
+        f"Context:\n---\n{context}\n---\n\n"
+        f"Question: {question}\n\n"
+        "Answer:"
+    )
     inputs = tokenizer(prompt, return_tensors='pt').to(model.device)
     outputs = model.generate(
         **inputs,
