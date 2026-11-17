@@ -1,5 +1,6 @@
 from .index_list import Chunk
 import re
+import os
 
 
 def clean_text(chunk_list: list[Chunk]) -> None:
@@ -9,7 +10,11 @@ def clean_text(chunk_list: list[Chunk]) -> None:
         chunk_list: List of Chunk objects whose text will be tokenized.
     """
     for chunk in chunk_list:
-        lower_text = chunk.text.lower()
+        if chunk.path.endswith('.py'):
+            filename = os.path.basename(chunk.path)
+            lower_text = f"{filename} {chunk.text}".lower()
+        else:
+            lower_text = chunk.text.lower()
         clean_text = re.sub(r'[^\w\s]', ' ', lower_text)
         chunk.tokens = clean_text.split()
 
