@@ -120,21 +120,35 @@ class SearchEngineCLI:
         if not os.path.exists(raw_dir):
             print(f"Error: {raw_dir} is not a valid path.\n")
             return
-        print("1. Recherche des fichiers...")
-        files_list = get_files_for_index(raw_dir)
-        print(f"2. Découpage de {len(files_list)} fichiers...")
-        chunk_list = chunk_files(files_list, max_chunk_size)
-        print(f"3. Nettoyage de {len(chunk_list)} chunks...")
-        clean_text(chunk_list)
-        print("4. Création du vocabulaire...")
-        global_vocab = create_vocab(chunk_list)
-        print(
-            f"5. Matrice TF ({len(chunk_list)}x{len(global_vocab)})..."
-        )
-        tf_matrix = get_tf_matrix(chunk_list, global_vocab)
-        idf_matrix = get_idf(tf_matrix)
-        tfidf_matrix = get_tfidf(tf_matrix, idf_matrix)
-        save_matrix(tfidf_matrix, global_vocab, chunk_list, processed_dir)
+        with tqdm(total=6, desc="1/6 Discovering files") as pbar:
+            files_list = get_files_for_index(raw_dir)
+            pbar.update(1)
+
+            pbar.set_description(f"2/6 Chunking ({len(files_list)} files)")
+            chunk_list = chunk_files(files_list, max_chunk_size)
+            pbar.update(1)
+
+            pbar.set_description(f"3/6 Cleaning ({len(chunk_list)} chunks)")
+            clean_text(chunk_list)
+            pbar.update(1)
+
+            pbar.set_description("4/6 Building vocabulary")
+            global_vocab = create_vocab(chunk_list)
+            pbar.update(1)
+
+            pbar.set_description(
+                f"5/6 Computing BM25 ({len(chunk_list)}x{len(global_vocab)})"
+            )
+            tf_matrix = get_tf_matrix(chunk_list, global_vocab)
+            idf_matrix = get_idf(tf_matrix)
+            tfidf_matrix = get_tfidf(tf_matrix, idf_matrix)
+            pbar.update(1)
+
+            pbar.set_description("6/6 Saving index to disk")
+            save_matrix(tfidf_matrix, global_vocab, chunk_list, processed_dir)
+            pbar.update(1)
+
+            pbar.set_description("Indexing complete")
 
     def answer(self, query: str, k: int,
                processed_dir: str = "data/processed/") -> None:
